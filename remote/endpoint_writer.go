@@ -112,6 +112,10 @@ func (state *endpointWriter) initializeInternal() error {
 			switch {
 			case errors.Is(err, io.EOF):
 				plog.Debug("EndpointWriter stream completed", log.String("address", state.address))
+				terminated := &EndpointTerminatedEvent{
+					Address: state.address,
+				}
+				state.remote.actorSystem.EventStream.Publish(terminated)
 				break
 			case err != nil:
 				plog.Error("EndpointWriter lost connection", log.String("address", state.address), log.Error(err))

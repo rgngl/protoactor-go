@@ -102,7 +102,7 @@ func (r *Remote) Shutdown(graceful bool) {
 		select {
 		case <-c:
 			plog.Info("Stopped Proto.Actor server")
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second):
 			r.s.Stop()
 			plog.Info("Stopped Proto.Actor server", log.String("err", "timeout"))
 		}
