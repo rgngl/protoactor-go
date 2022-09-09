@@ -107,29 +107,25 @@ func (state *endpointWriter) initializeInternal() error {
 	}
 
 	go func() {
+		defer func() {
+			terminated := &EndpointTerminatedEvent{
+				Address: state.address,
+			}
+			state.remote.actorSystem.EventStream.Publish(terminated)
+		}()
+
 		for {
 			_, err := stream.Recv()
 			switch {
 			case errors.Is(err, io.EOF):
 				plog.Debug("EndpointWriter stream completed", log.String("address", state.address))
-				terminated := &EndpointTerminatedEvent{
-					Address: state.address,
-				}
-				state.remote.actorSystem.EventStream.Publish(terminated)
-				break
+				return
 			case err != nil:
 				plog.Error("EndpointWriter lost connection", log.String("address", state.address), log.Error(err))
-				terminated := &EndpointTerminatedEvent{
-					Address: state.address,
-				}
-				state.remote.actorSystem.EventStream.Publish(terminated)
 				return
 			default:
 				plog.Info("EndpointWriter remote disconnected", log.String("address", state.address))
-				terminated := &EndpointTerminatedEvent{
-					Address: state.address,
-				}
-				state.remote.actorSystem.EventStream.Publish(terminated)
+				return
 			}
 		}
 	}()
