@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/asynkron/gofun/set"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/asynkron/protoactor-go/extensions"
@@ -207,8 +209,8 @@ func (c *Cluster) Call(name string, kind string, msg interface{}, opts ...GrainC
 		_resp, err := _context.RequestFuture(pid, msg, timeout).Result()
 		if err != nil {
 			var msgStr string
-			if s, ok := msg.(interface{ String() string }); ok {
-				msgStr = s.String()
+			if pm, ok := msg.(proto.Message); ok {
+				msgStr = protojson.Format(pm)
 			}
 
 			plog.Error("cluster.RequestFuture failed", log.Error(err), log.PID("pid", pid),
