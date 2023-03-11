@@ -209,14 +209,12 @@ func (c *Cluster) Call(name string, kind string, msg interface{}, opts ...GrainC
 			var msgStr string
 			if s, ok := msg.(interface{ String() string }); ok {
 				msgStr = s.String()
-			} else {
-				msgStr = fmt.Sprintf("%T", msg)
 			}
 
 			plog.Error("cluster.RequestFuture failed", log.Error(err), log.PID("pid", pid),
 				log.String("name", name), log.String("kind", kind),
 				log.PID("sender", _context.Sender()),
-				log.String("msg_str", msgStr),
+				log.String("msg_str", msgStr), log.String("msg_type", fmt.Sprintf("%T", msg)),
 			)
 			lastError = err
 
