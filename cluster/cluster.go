@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/asynkron/gofun/set"
@@ -205,9 +206,17 @@ func (c *Cluster) Call(name string, kind string, msg interface{}, opts ...GrainC
 		timeout := callConfig.Timeout
 		_resp, err := _context.RequestFuture(pid, msg, timeout).Result()
 		if err != nil {
+			var msgStr string
+			if s, ok := msg.(interface{ String() string }); ok {
+				msgStr = s.String()
+			} else {
+				msgStr = fmt.Sprintf("%T", msg)
+			}
+
 			plog.Error("cluster.RequestFuture failed", log.Error(err), log.PID("pid", pid),
 				log.String("name", name), log.String("kind", kind),
 				log.PID("sender", _context.Sender()),
+				log.String("msg_str", msgStr),
 			)
 			lastError = err
 
